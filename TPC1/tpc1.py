@@ -17,6 +17,22 @@ class Atleta:
         self.federado = federado
         self.result = result
 
+    def __init__(self,dict):
+        self.id = dict['_id']
+        self.index = dict['index']
+        self.date = dict['dataEMD']
+        self.firstname = dict['nome/primeiro']
+        self.lastname = dict['nome/último']
+        self.age = int(dict['idade'])
+        self.gender = dict['género'] == 'M'
+        self.adress = dict['morada']
+        self.sport = dict['modalidade']
+        self.club = dict['clube']
+        self.email = dict['email']
+        self.federado = dict['federado'].lower() == 'true'
+        self.result = dict['resultado'].lower() == 'true'
+
+
 
 def listSport(athletes):
     sports =set()
@@ -38,12 +54,17 @@ def percentagemAptos(athletes):
 
     return (aptos / len(athletes)) * 100
 
-def parteIdade(idade):
-    # 20 -> 20-24, 22->20-24, 25->25-29
-    res = idade // 5
-    return f"{res*5}-{res*5+4}"
+def parteIdade(idade,escalao = 5):
+    # (20,5) -> 20-24, 22->20-24, (25)->25-29
+    # (20,10) -> 20-29, (22,10)->20-29, (25,10)->20-29
+    if escalao <= 1:
+        return f"{idade}-{idade}"
 
-def distribuicaoIdades(athletes):
+    res = (idade // escalao) * escalao
+
+    return f"{res}-{res+(escalao-1)}"
+
+def distribuicaoIdades(athletes,step = 5):
     
     minAge = sys.maxsize
     maxAge = 0
@@ -54,54 +75,53 @@ def distribuicaoIdades(athletes):
             minAge = athlete.age
     
     dict = {}
-
+    minAge = minAge - (minAge % step)
     while minAge <= maxAge:
-        code = parteIdade(minAge)
+        min
+        code = parteIdade(minAge,escalao=step)
         dict[code] = 0
-        minAge += 5
+        minAge += step
     
-    code = parteIdade(maxAge)
-    dict[code] = 0
 
-    
+
+
     for athlete in athletes.values():
-        code = parteIdade(athlete.age)
+        code = parteIdade(athlete.age,escalao=step)
         dict[code] += 1
 
+    for key,value in dict.items():
+        if dict[key] == 0:
+            del dict[key]
 
 
     return dict
 
+def parseLine(line,headerdata):
+    line = line.strip()
+    data = line.split(',')
+        
+    dictLine = {}
+    for i in range(len(headerdata)):
+        dictLine[headerdata[i]] = data[i]
+    
+    return Atleta(dictLine)
+        
+
+
+
+
 def main():
     athletes = {}
-    header = input() # reads the header of csv file
-    print(header)
+    header = input().strip() # reads the header of csv file
+    headerdata = header.split(',')
 
-
+    
     # reading data from csv file
     for line in sys.stdin:
-        line = line.strip()
-        data = line.split(',')
-        id = data[0]
-        index = data[1]
-        date = data[2]
-        firstname = data[3]
-        lastname = data[4]
-
-        age = int(data[5])
-
-        gender = data[6] == 'M'
-
-        adress = data[7]
-        sport = data[8]
-        club = data[9]
-        email = data[10]
-        federado = data[11].lower() == 'true'
-    
-        result = data[12].lower() == 'true'
+        atleta = parseLine(line,headerdata)
+        athletes[atleta.id] = atleta
 
 
-        athletes[id] = Atleta(id, index, date, firstname, lastname, age, gender, adress, sport, club, email, federado, result)   
 
     sports = listSport(athletes)
     print("=== LISTA DE TODAS AS MODALIDADES ====")
@@ -113,10 +133,23 @@ def main():
     print("Aptos: {:.2f}%".format(aptos))
     print("Não Aptos: {:.2f}%".format(naoAptos))
 
+
     dist = distribuicaoIdades(athletes)
-    print("=== DISTRIBUIÇÃO DE IDADES ===")
+    x = len(dist)
+
+    print("=== DISTRIBUIÇÃO DE IDADES (5 em 5 anos)===")
     for key, value in dist.items():
-        print(f"{key}: {value}")
+        print(f"{key}: {value} ({value/x})%")
+
+
+    '''
+    dist = distribuicaoIdades(athletes,2)
+
+  
+    print("=== DISTRIBUIÇÃO DE IDADES (2 em 2 anos)===")
+    for key, value in dist.items():
+        print(f"{key}: {value} ({value/x}%)")
+    '''
 
 
 
