@@ -77,7 +77,6 @@ def distribuicaoIdades(athletes,step = 5):
     dict = {}
     minAge = minAge - (minAge % step)
     while minAge <= maxAge:
-        min
         code = parteIdade(minAge,escalao=step)
         dict[code] = 0
         minAge += step
@@ -89,7 +88,7 @@ def distribuicaoIdades(athletes,step = 5):
         code = parteIdade(athlete.age,escalao=step)
         dict[code] += 1
 
-    for key,value in dict.items():
+    for key in dict.keys():
         if dict[key] == 0:
             del dict[key]
 
@@ -135,11 +134,11 @@ def main():
 
 
     dist = distribuicaoIdades(athletes)
-    x = len(dist)
+    x = len(athletes)
 
     print("=== DISTRIBUIÇÃO DE IDADES (5 em 5 anos)===")
     for key, value in dist.items():
-        print(f"{key}: {value} ({value/x})%")
+        print(f"{key}: {value} ({((value/x)*100):.2f})%")
 
 
     '''
