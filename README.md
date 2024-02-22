@@ -12,8 +12,9 @@
 
 **Nome:** Luís Barros
 
-a100693
+**Número aluno:** a100693
 
+**gitHub** : [Luis-Barros9](https://github.com/Luis-Barros9)
 
 **Fotografia:**
 ![Fotografia do aluno ](./eu.jpeg)

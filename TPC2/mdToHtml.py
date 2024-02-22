@@ -1,5 +1,6 @@
 import re
 import sys
+import re
 
 
 
@@ -22,19 +23,20 @@ def subImage(line):
     return re.sub(r'!\[([^\]]*)\]\(([^\)]*)\)',lambda x: f'<br /><img class = "w3-image" src="{x[2]}" alt="{x[1]}">',line)
 
 
+def subLink(line):
+  
+    return re.sub(r'(?<!!)\[([^\]]*)\]\(([^\)]*)\)',lambda x: f'<a href="{x[2]}">{x[1]}</a>',line)
+
 
 def mardownLineToHtml(line):
-    new = subImage(line)
-    if new != line:
-        return new
-    new =subHeading(line)
-    if new != line:
-        return new
-    new = subBold(line)
-    if new != line:
-        return new
-    new = subItalic(line)
-    return new
+    line = clearWhiteSpaces(line)
+    line = subImage(line)
+    line = subLink(line)
+    line =subHeading(line)
+
+    line = subBold(line)
+    line = subItalic(line)
+    return line
 
 def markdownToHtml(file):
     html = template
@@ -52,7 +54,7 @@ def markdownToHtml(file):
             if not firstLine and addNewLine:
                     html += "<br />"
                     addNewLine = False
-            html += clearWhiteSpaces(mardownLineToHtml(line))
+            html += (mardownLineToHtml(line))
     
 
     html += "</div></body></html>"
