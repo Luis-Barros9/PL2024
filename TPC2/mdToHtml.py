@@ -36,6 +36,7 @@ def mardownLineToHtml(line):
 
     line = subBold(line)
     line = subItalic(line)
+    line = subLists(line)
     return line
 
 def markdownToHtml(file):
@@ -55,12 +56,16 @@ def markdownToHtml(file):
                     html += "<br />"
                     addNewLine = False
             html += (mardownLineToHtml(line))
-    
-
+    html = correctLists(html)
     html += "</div></body></html>"
     file = open(f"resut.html", "w", encoding="utf-8")
     file.write(html)
     file.close()
+
+
+def createParagraph(md):
+    #this function uses regex to create a paragraph tag for every line using regex
+    return re.sub(r'(?<!<h[1-6]>)\n(?!\s*<li>)',lambda x: "<p>",md)
 
 
 
@@ -69,21 +74,33 @@ def addHtmlTags(line,tag):
 
 def subHeading(line):
     # this function turns every markdown heading expression into html heading expression
-    return re.sub(r'(#{1,6})\s*(.*)',lambda x: addHtmlTags(x[2],f'h{len(x[1])}'),line)
+    return re.sub(r'^ {0,3}(#{1,6})\s*(.*)',lambda x: addHtmlTags(x[2],f'h{len(x[1])}') + "<br/>",line)
 
 def subBold(line):
     # this function turns every markdown bold expression into html bold expression
     t = 'b'
     firstSub = re.sub(r'\*\*([^\*\s])\*\*|\*\*([^\*\s].*?[^\*\s])\*\*',lambda x: addHtmlTags(x[1] if x[1] else x[2],t) ,line )
     
-    return re.sub(r'\W+__([^_\s])__\W+|\W+__([^_\s].*?[^_\s])__\W+',lambda x: addHtmlTags(x[1] if x[1] else x[2],t) ,firstSub )
+    return re.sub(r'\b__([^_\s])__\W+|\W+__([^_\s].*?[^_\s])__\b',lambda x: addHtmlTags(x[1] if x[1] else x[2],t) ,firstSub )
 
 def subItalic(line):
     t = 'i'
     firstSub = re.sub(r'\*([^\*\s])\*|\*([^\*\s].*?[^\*\s])\*',lambda x: addHtmlTags(x[1] if x[1] else x[2],t) ,line )
     
-    return re.sub(r'_([^_\s])_|_([^_\s].*?[^_\s])_',lambda x: addHtmlTags(x[1] if x[1] else x[2],t) ,firstSub )
+    return re.sub(r'\b_([^_\s])_\b|\b_([^_\s].*?[^_\s])_\b',lambda x: addHtmlTags(x[1] if x[1] else x[2],t) ,firstSub )
 
+
+def subLists(md):
+    # Replace unordered list items
+    md = re.sub(r'^\*\s+(.*)?$', lambda x: f'<li id="unorder">{x[1]}</li>', md)
+    # Replace ordered list items
+    md = re.sub(r'^\d\.\s+(.*)?$', lambda x: f'<li>{x[1]}</li>', md)
+    # Wrap lists in <ul> tags
+    return md
+
+def correctLists(md):
+    md = re.sub(r'((<li>.*?</li>\n*)+)', lambda x : f'<ol>\n{x[1]}</ol>\n', md)
+    return re.sub(r'((<li id="unorder">.*?</li>\n*)+)', lambda x : f'<ul>\n{x[1]}</ul>\n', md)
 
 
 def main():
